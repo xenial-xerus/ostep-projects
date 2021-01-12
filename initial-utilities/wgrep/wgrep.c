@@ -54,6 +54,8 @@ int main(int argc, char const *argv[])
 
 
 // Not my code: Picked from xv6 version of grep
+// Adding source loc: https://github.com/xenial-xerus/xv6-public/blob/master/grep.c
+
 
 // Regexp matcher from Kernighan & Pike,
 // The Practice of Programming, Chapter 9.
