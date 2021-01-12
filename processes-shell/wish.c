@@ -33,8 +33,24 @@ void print_cmd_before_run(char *string)
     write(STDOUT_FILENO, string, strlen(string));
 }
 
+void run_batch_mode(char const *filename)
+{
+    print_cmd_before_run("Batch Mode Support not added yet!!\n");
+    show_error_and_exit();
+}
+
 int main(int argc, char const *argv[])
 {
+    if (argc > 2) {
+        show_error_and_exit();
+    }
+
+    if (argc == 2) {
+        //Shell is suppose to run in batch mode
+        run_batch_mode(argv[1]);
+    }
+
+    // Running in interactive mode
     while (1)
     {
         char *cmd;

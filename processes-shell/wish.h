@@ -15,5 +15,8 @@ void show_error_and_exit();
 /* Only for testing: Used to print the final parsed commandline */
 void print_cmd_before_run(char *string);
 
+/* Runs batch mode */
+void run_batch_mode(char const *filename);
+
 /*MAIN*/
 int main(int argc, char const *argv[]);
