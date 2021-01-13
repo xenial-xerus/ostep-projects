@@ -29,6 +29,9 @@ void print_cmd_before_run(char *cmd, char *args);
 /* Runs batch mode */
 void run_batch_mode(char const *filename);
 
+/* Returns path */
+char *get_path(char *cmd);
+
 /* Runs the given command */
 void run_command(char* cmd, char *args);
 

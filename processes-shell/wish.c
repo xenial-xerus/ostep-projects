@@ -12,7 +12,7 @@ void init_path()
 {
     // Initially the path will only contain '/bin/' folder
     char *str = "/bin";
-    path[0] = malloc(strlen(str));
+    path[0] = (char *) malloc(strlen(str));
     strcpy(path[0], str);
 }
 
@@ -77,12 +77,38 @@ void run_batch_mode(char const *filename)
     show_error_and_exit();
 }
 
+char *get_path(char *cmd)
+{
+    char *root_path;
+
+    //Iterate path
+    for (int i = 0; path[i]; i++) {
+        root_path = (char *) malloc(strlen(path[i]) + strlen(cmd) + 1);
+        strcpy(root_path, path[i]);
+        strcat(root_path, "/");
+        strcat(root_path, cmd);
+
+        //Check if exe is present here
+        if (access(root_path, X_OK) != 0) {
+            free(root_path);
+            continue;
+        }
+        return root_path;
+    }
+
+    //Any of the given paths do not have an exe, return error
+    show_error_and_exit();
+
+    return NULL;
+}
+
 void run_command(char* cmd, char *args)
 {
     int rc;
+    char *exe_path;
 
-    // Check if the given command runs 
-
+    // Search if given executable command is present in one of the defined paths
+    exe_path = get_path(cmd);
 
     rc = fork();
     if (rc < 0) {
@@ -90,7 +116,7 @@ void run_command(char* cmd, char *args)
     }
     if (rc == 0) {     //Child Process
         char *argv[2];
-        argv[0] = "/bin/ls";
+        argv[0] = exe_path;
         argv[1] = NULL;
         execv(argv[0], argv);
     }
@@ -117,14 +143,12 @@ int main(int argc, char const *argv[])
     // Running in interactive mode
     while (1)
     {
-        // char *line, **cmd = NULL, **args = NULL;
         char *line, *cmd[MAX_COMMANDS], *args[MAX_COMMANDS];
         int total_cmds = 0;
         show_prompt();
         line = accept_input();
         total_cmds = parse_input(line, cmd, args);
         for (int i = 0; i < total_cmds; i++) {
-            // print_cmd_before_run(cmd[i], args[i]);
             run_command(cmd[i], args[i]);
         }
     }
