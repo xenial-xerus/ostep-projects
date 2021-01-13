@@ -1,9 +1,19 @@
 #include "wish.h"
 
+char *path[MAX_PATHS];
+
 void show_prompt()
 {
     char message[7] = "wish> ";
     write(STDOUT_FILENO, message, strlen(message));
+}
+
+void init_path()
+{
+    // Initially the path will only contain '/bin/' folder
+    char *str = "/bin";
+    path[0] = malloc(strlen(str));
+    strcpy(path[0], str);
 }
 
 char* accept_input()
@@ -21,6 +31,27 @@ char* accept_input()
     return string;
 }
 
+int parse_input(char *line, char *cmd[], char *args[])
+{
+    char *found;
+    int tot_cmd = 0;
+
+    // Remove the newline character from the end of line
+    if (line[strlen(line) - 1] == '\n')
+        line[strlen(line) - 1] = 0;
+
+    while ((found = strsep(&line, " ")) != NULL) {
+        if (!(found[0] == '\0' || isspace(found[0]))) {      //Ignores extra spaces
+            cmd[tot_cmd] = (char *) malloc(strlen(found) * sizeof(char));
+            strcpy(cmd[tot_cmd], found);
+            // Assuming only one command with zero args for now
+            *args = NULL;
+            tot_cmd++;
+        }
+    }
+    return tot_cmd;
+}
+
 void show_error_and_exit()
 {
     char error_message[30] = "An error has occurred\n";
@@ -28,22 +59,55 @@ void show_error_and_exit()
     exit(1);
 }
 
-void print_cmd_before_run(char *string)
+void print_cmd_before_run(char *cmd, char *args)
 {
-    write(STDOUT_FILENO, string, strlen(string));
+    if (cmd) {
+        strcat(cmd, "\n");
+        write(STDOUT_FILENO, cmd, strlen(cmd));
+    }
+    if (args) {
+        strcat(args, "\n");
+        write(STDOUT_FILENO, args, strlen(args));
+    }
 }
 
 void run_batch_mode(char const *filename)
 {
-    print_cmd_before_run("Batch Mode Support not added yet!!\n");
+    print_cmd_before_run("Batch Mode Support not added yet!!\n", NULL);
     show_error_and_exit();
 }
+
+void run_command(char* cmd, char *args)
+{
+    int rc;
+
+    // Check if the given command runs 
+
+
+    rc = fork();
+    if (rc < 0) {
+        show_error_and_exit();
+    }
+    if (rc == 0) {     //Child Process
+        char *argv[2];
+        argv[0] = "/bin/ls";
+        argv[1] = NULL;
+        execv(argv[0], argv);
+    }
+    else {
+        wait(NULL);
+    }
+}
+
+
 
 int main(int argc, char const *argv[])
 {
     if (argc > 2) {
         show_error_and_exit();
     }
+
+    init_path();
 
     if (argc == 2) {
         //Shell is suppose to run in batch mode
@@ -53,10 +117,16 @@ int main(int argc, char const *argv[])
     // Running in interactive mode
     while (1)
     {
-        char *cmd;
+        // char *line, **cmd = NULL, **args = NULL;
+        char *line, *cmd[MAX_COMMANDS], *args[MAX_COMMANDS];
+        int total_cmds = 0;
         show_prompt();
-        cmd = accept_input();
-        print_cmd_before_run(cmd);
+        line = accept_input();
+        total_cmds = parse_input(line, cmd, args);
+        for (int i = 0; i < total_cmds; i++) {
+            // print_cmd_before_run(cmd[i], args[i]);
+            run_command(cmd[i], args[i]);
+        }
     }
     
     return 0;
